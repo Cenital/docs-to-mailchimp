@@ -34,7 +34,15 @@ function cleanFormatting() {
     }
     
     // Get the cleaned HTML
-    const cleanedHTML = tempDiv.innerHTML;
+    let cleanedHTML = tempDiv.innerHTML;
+    
+    // Decode common HTML entities to their corresponding characters
+    cleanedHTML = cleanedHTML.replace(/&nbsp;/g, ' ');
+    cleanedHTML = cleanedHTML.replace(/&amp;/g, '&');
+    cleanedHTML = cleanedHTML.replace(/&lt;/g, '<');
+    cleanedHTML = cleanedHTML.replace(/&gt;/g, '>');
+    cleanedHTML = cleanedHTML.replace(/&quot;/g, '"');
+    cleanedHTML = cleanedHTML.replace(/&#39;/g, "'");
     
     // Set the output
     outputArea.innerHTML = cleanedHTML;
@@ -152,8 +160,8 @@ function processElement(parent) {
                 return;
             }
             
-            // Keep only essential tags: p, br, strong, em, u, a, ul, ol, li, h1-h6
-            const allowedTags = ['P', 'BR', 'STRONG', 'EM', 'U', 'A', 'UL', 'OL', 'LI', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+            // Keep only essential tags: p, br, strong, em, u, a, ul, ol, li, h1-h6, blockquote
+            const allowedTags = ['P', 'BR', 'STRONG', 'EM', 'U', 'A', 'UL', 'OL', 'LI', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'];
             
             if (!allowedTags.includes(element.tagName)) {
                 // For other tags, unwrap them but keep content

@@ -56,6 +56,7 @@ The tool preserves:
 - Numbered lists (`<ol>`, `<li>`)
 - Paragraphs (`<p>`)
 - Headlines (`<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`)
+- Block quotes (`<blockquote>`)
 - Line breaks (`<br>`) within paragraphs
 
 ## No Installation Required

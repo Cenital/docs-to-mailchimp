@@ -279,6 +279,15 @@ footer {
     margin: 1.67em 0;
 }
 
+.input-container blockquote,
+.output-container blockquote {
+    margin: 1em 0;
+    padding-left: 1.5em;
+    border-left: 3px solid #7E7E7E;
+    color: #58595E;
+    font-style: italic;
+}
+
 /* Tabs */
 .tabs {
     display: flex;
