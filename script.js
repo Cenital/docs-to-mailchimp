@@ -4,6 +4,12 @@ const outputArea = document.getElementById('output');
 const cleanButton = document.getElementById('cleanButton');
 const copyButton = document.getElementById('copyButton');
 const clearButton = document.getElementById('clearButton');
+const removeEmptyLinesCheckbox = document.getElementById('removeEmptyLines');
+const showHtmlCheckbox = document.getElementById('showHtml');
+const inputHtmlView = document.getElementById('inputHtmlView');
+const outputHtmlView = document.getElementById('outputHtmlView');
+const inputTabs = document.getElementById('inputTabs');
+const outputTabs = document.getElementById('outputTabs');
 
 // Clean formatting function
 function cleanFormatting() {
@@ -11,7 +17,7 @@ function cleanFormatting() {
     const inputHTML = inputArea.innerHTML;
     
     if (!inputHTML.trim()) {
-        alert('Please paste some content first!');
+        alert('¡Por favor pegá contenido primero!');
         return;
     }
     
@@ -22,11 +28,28 @@ function cleanFormatting() {
     // Remove specific Google Docs artifacts and unwanted styling
     cleanGoogleDocsFormatting(tempDiv);
     
+    // Remove empty lines between paragraphs if checkbox is checked
+    if (removeEmptyLinesCheckbox.checked) {
+        removeEmptyLinesBetweenParagraphs(tempDiv);
+    }
+    
     // Get the cleaned HTML
-    const cleanedHTML = tempDiv.innerHTML;
+    let cleanedHTML = tempDiv.innerHTML;
+    
+    // Decode common HTML entities to their corresponding characters
+    // Note: &amp; must be replaced last to avoid double-decoding
+    cleanedHTML = cleanedHTML.replace(/&nbsp;/g, ' ');
+    cleanedHTML = cleanedHTML.replace(/&lt;/g, '<');
+    cleanedHTML = cleanedHTML.replace(/&gt;/g, '>');
+    cleanedHTML = cleanedHTML.replace(/&quot;/g, '"');
+    cleanedHTML = cleanedHTML.replace(/&#39;/g, "'");
+    cleanedHTML = cleanedHTML.replace(/&amp;/g, '&');
     
     // Set the output
     outputArea.innerHTML = cleanedHTML;
+    
+    // Update HTML views if visible
+    updateHtmlViews();
     
     // Enable copy button
     copyButton.disabled = false;
@@ -138,8 +161,8 @@ function processElement(parent) {
                 return;
             }
             
-            // Keep only essential tags: p, br, strong, em, u, a, ul, ol, li
-            const allowedTags = ['P', 'BR', 'STRONG', 'EM', 'U', 'A', 'UL', 'OL', 'LI', 'DIV'];
+            // Keep only essential tags: p, br, strong, em, u, a, ul, ol, li, h1-h6, blockquote
+            const allowedTags = ['P', 'BR', 'STRONG', 'EM', 'U', 'A', 'UL', 'OL', 'LI', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'];
             
             if (!allowedTags.includes(element.tagName)) {
                 // For other tags, unwrap them but keep content
@@ -184,6 +207,47 @@ function removeEmptyElements(parent) {
     });
 }
 
+function removeEmptyLinesBetweenParagraphs(parent) {
+    // Find all <br> elements that appear between closing and opening <p> tags
+    // This handles patterns like </p><br><p> or </p> <br> <p>
+    const allBrNodes = Array.from(parent.querySelectorAll('br'));
+    
+    allBrNodes.forEach(node => {
+        // Find previous and next element siblings, skipping text nodes
+        let prev = node.previousSibling;
+        while (prev && prev.nodeType === Node.TEXT_NODE && prev.textContent.trim() === '') {
+            prev = prev.previousSibling;
+        }
+        
+        let next = node.nextSibling;
+        while (next && next.nodeType === Node.TEXT_NODE && next.textContent.trim() === '') {
+            next = next.nextSibling;
+        }
+        
+        // Remove <br> if it's between two paragraphs
+        if (prev && next && prev.nodeType === Node.ELEMENT_NODE && next.nodeType === Node.ELEMENT_NODE &&
+            prev.tagName === 'P' && next.tagName === 'P') {
+            node.remove();
+        }
+    });
+    
+    // Also handle <br> inside paragraphs that are alone
+    const paragraphs = parent.querySelectorAll('p');
+    paragraphs.forEach(p => {
+        // If paragraph only contains a <br> and whitespace, remove the <br>
+        const children = Array.from(p.childNodes);
+        const hasOnlyBr = children.every(child => {
+            if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'BR') return true;
+            if (child.nodeType === Node.TEXT_NODE && child.textContent.trim() === '') return true;
+            return false;
+        });
+        
+        if (hasOnlyBr && children.some(child => child.tagName === 'BR')) {
+            p.querySelectorAll('br').forEach(br => br.remove());
+        }
+    });
+}
+
 // Copy to clipboard function
 async function copyToClipboard() {
     try {
@@ -202,11 +266,11 @@ async function copyToClipboard() {
                     'text/plain': new Blob([plainText], { type: 'text/plain' })
                 })
             ]);
-            showFeedback('Copied to clipboard!');
+            showFeedback('¡Copiado al portapapeles!');
         } catch (err) {
             // Fallback to plain text if HTML copy fails
             await navigator.clipboard.writeText(plainText);
-            showFeedback('Copied as plain text!');
+            showFeedback('¡Copiado como texto plano!');
         }
     } catch (err) {
         console.error('Failed to copy:', err);
@@ -226,9 +290,9 @@ function fallbackCopy() {
         // Using deprecated execCommand as a fallback for older browsers
         // that don't support the Clipboard API
         document.execCommand('copy');
-        showFeedback('Copied to clipboard!');
+        showFeedback('¡Copiado al portapapeles!');
     } catch (err) {
-        alert('Failed to copy. Please select and copy manually.');
+        alert('Error al copiar. Por favor seleccioná y copiá manualmente.');
     }
     
     selection.removeAllRanges();
@@ -237,7 +301,7 @@ function fallbackCopy() {
 function showFeedback(message) {
     const originalText = copyButton.textContent;
     copyButton.textContent = message;
-    copyButton.style.background = '#059669';
+    copyButton.style.background = '#F95755';
     
     setTimeout(() => {
         copyButton.textContent = originalText;
@@ -248,13 +312,83 @@ function showFeedback(message) {
 function clearAll() {
     inputArea.innerHTML = '';
     outputArea.innerHTML = '';
+    inputHtmlView.value = '';
+    outputHtmlView.value = '';
     copyButton.disabled = true;
 }
+
+// HTML view functionality
+function updateHtmlViews() {
+    inputHtmlView.value = inputArea.innerHTML;
+    outputHtmlView.value = outputArea.innerHTML;
+}
+
+function toggleHtmlView() {
+    const showHtml = showHtmlCheckbox.checked;
+    
+    if (showHtml) {
+        inputTabs.style.display = 'flex';
+        outputTabs.style.display = 'flex';
+        updateHtmlViews();
+    } else {
+        inputTabs.style.display = 'none';
+        outputTabs.style.display = 'none';
+        // Reset to visual tabs
+        switchTab('input-visual', inputTabs);
+        switchTab('output-visual', outputTabs);
+    }
+}
+
+function switchTab(tabId, tabsContainer) {
+    // Hide all tab contents in the relevant section
+    const section = tabsContainer.parentElement;
+    const tabContents = section.querySelectorAll('.tab-content');
+    const tabButtons = tabsContainer.querySelectorAll('.tab-button');
+    
+    tabContents.forEach(content => {
+        content.style.display = 'none';
+        content.classList.remove('active');
+    });
+    
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Show the selected tab
+    const selectedContent = document.getElementById(tabId);
+    if (selectedContent) {
+        selectedContent.style.display = 'block';
+        selectedContent.classList.add('active');
+    }
+    
+    // Activate the button
+    const activeButton = tabsContainer.querySelector(`[data-tab="${tabId}"]`);
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
+}
+
+// Update HTML views when input changes
+inputArea.addEventListener('input', () => {
+    if (showHtmlCheckbox.checked) {
+        updateHtmlViews();
+    }
+});
 
 // Event listeners
 cleanButton.addEventListener('click', cleanFormatting);
 copyButton.addEventListener('click', copyToClipboard);
 clearButton.addEventListener('click', clearAll);
+showHtmlCheckbox.addEventListener('change', toggleHtmlView);
+
+// Tab switching
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('tab-button')) {
+        const tabId = e.target.getAttribute('data-tab');
+        const tabsContainer = e.target.closest('.tabs');
+        switchTab(tabId, tabsContainer);
+    }
+});
 
 // Allow Enter key to trigger cleaning
 inputArea.addEventListener('keydown', (e) => {
