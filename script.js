@@ -5,6 +5,11 @@ const cleanButton = document.getElementById('cleanButton');
 const copyButton = document.getElementById('copyButton');
 const clearButton = document.getElementById('clearButton');
 const removeEmptyLinesCheckbox = document.getElementById('removeEmptyLines');
+const showHtmlCheckbox = document.getElementById('showHtml');
+const inputHtmlView = document.getElementById('inputHtmlView');
+const outputHtmlView = document.getElementById('outputHtmlView');
+const inputTabs = document.getElementById('inputTabs');
+const outputTabs = document.getElementById('outputTabs');
 
 // Clean formatting function
 function cleanFormatting() {
@@ -33,6 +38,9 @@ function cleanFormatting() {
     
     // Set the output
     outputArea.innerHTML = cleanedHTML;
+    
+    // Update HTML views if visible
+    updateHtmlViews();
     
     // Enable copy button
     copyButton.disabled = false;
@@ -295,13 +303,83 @@ function showFeedback(message) {
 function clearAll() {
     inputArea.innerHTML = '';
     outputArea.innerHTML = '';
+    inputHtmlView.value = '';
+    outputHtmlView.value = '';
     copyButton.disabled = true;
 }
+
+// HTML view functionality
+function updateHtmlViews() {
+    inputHtmlView.value = inputArea.innerHTML;
+    outputHtmlView.value = outputArea.innerHTML;
+}
+
+function toggleHtmlView() {
+    const showHtml = showHtmlCheckbox.checked;
+    
+    if (showHtml) {
+        inputTabs.style.display = 'flex';
+        outputTabs.style.display = 'flex';
+        updateHtmlViews();
+    } else {
+        inputTabs.style.display = 'none';
+        outputTabs.style.display = 'none';
+        // Reset to visual tabs
+        switchTab('input-visual', inputTabs);
+        switchTab('output-visual', outputTabs);
+    }
+}
+
+function switchTab(tabId, tabsContainer) {
+    // Hide all tab contents in the relevant section
+    const section = tabsContainer.parentElement;
+    const tabContents = section.querySelectorAll('.tab-content');
+    const tabButtons = tabsContainer.querySelectorAll('.tab-button');
+    
+    tabContents.forEach(content => {
+        content.style.display = 'none';
+        content.classList.remove('active');
+    });
+    
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Show the selected tab
+    const selectedContent = document.getElementById(tabId);
+    if (selectedContent) {
+        selectedContent.style.display = 'block';
+        selectedContent.classList.add('active');
+    }
+    
+    // Activate the button
+    const activeButton = tabsContainer.querySelector(`[data-tab="${tabId}"]`);
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
+}
+
+// Update HTML views when input changes
+inputArea.addEventListener('input', () => {
+    if (showHtmlCheckbox.checked) {
+        updateHtmlViews();
+    }
+});
 
 // Event listeners
 cleanButton.addEventListener('click', cleanFormatting);
 copyButton.addEventListener('click', copyToClipboard);
 clearButton.addEventListener('click', clearAll);
+showHtmlCheckbox.addEventListener('change', toggleHtmlView);
+
+// Tab switching
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('tab-button')) {
+        const tabId = e.target.getAttribute('data-tab');
+        const tabsContainer = e.target.closest('.tabs');
+        switchTab(tabId, tabsContainer);
+    }
+});
 
 // Allow Enter key to trigger cleaning
 inputArea.addEventListener('keydown', (e) => {

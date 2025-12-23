@@ -113,7 +113,9 @@ main {
 .options-container {
     display: flex;
     justify-content: center;
+    gap: 30px;
     margin-bottom: 30px;
+    flex-wrap: wrap;
 }
 
 .checkbox-label {
@@ -153,7 +155,7 @@ main {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #001936 0%, #FE312E 100%);
+    background: #FE312E;
     color: white;
 }
 
@@ -232,4 +234,57 @@ footer {
 .input-container p,
 .output-container p {
     margin-bottom: 10px;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #7E7E7E;
+    transition: all 0.2s;
+}
+
+.tab-button:hover {
+    color: #FE312E;
+}
+
+.tab-button.active {
+    color: #FE312E;
+    border-bottom-color: #FE312E;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.html-viewer {
+    width: 100%;
+    min-height: 250px;
+    max-height: 400px;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: #f5f5f5;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #333;
+    resize: vertical;
+    overflow-y: auto;
 }

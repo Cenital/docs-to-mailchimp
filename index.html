@@ -19,7 +19,16 @@
                     <h2>Pegá desde Google Docs</h2>
                     <p class="hint">Copiá el contenido de Google Docs y pegalo acá abajo</p>
                 </div>
-                <div class="input-container" contenteditable="true" id="input" placeholder="Pegá tu contenido de Google Docs acá..."></div>
+                <div class="tabs" id="inputTabs" style="display: none;">
+                    <button class="tab-button active" data-tab="input-visual">Visual</button>
+                    <button class="tab-button" data-tab="input-html">HTML</button>
+                </div>
+                <div class="tab-content active" id="input-visual">
+                    <div class="input-container" contenteditable="true" id="input" placeholder="Pegá tu contenido de Google Docs acá..."></div>
+                </div>
+                <div class="tab-content" id="input-html" style="display: none;">
+                    <textarea class="html-viewer" id="inputHtmlView" readonly></textarea>
+                </div>
             </div>
 
             <div class="button-container">
@@ -32,6 +41,10 @@
                     <input type="checkbox" id="removeEmptyLines" checked>
                     <span>Eliminar líneas vacías entre párrafos</span>
                 </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="showHtml">
+                    <span>Mostrar HTML (desarrollo)</span>
+                </label>
             </div>
 
             <div class="panel">
@@ -39,7 +52,16 @@
                     <h2>Resultado Limpio</h2>
                     <p class="hint">Listo para pegar en Mailchimp</p>
                 </div>
-                <div class="output-container" contenteditable="false" id="output"></div>
+                <div class="tabs" id="outputTabs" style="display: none;">
+                    <button class="tab-button active" data-tab="output-visual">Visual</button>
+                    <button class="tab-button" data-tab="output-html">HTML</button>
+                </div>
+                <div class="tab-content active" id="output-visual">
+                    <div class="output-container" contenteditable="false" id="output"></div>
+                </div>
+                <div class="tab-content" id="output-html" style="display: none;">
+                    <textarea class="html-viewer" id="outputHtmlView" readonly></textarea>
+                </div>
                 <button id="copyButton" class="btn btn-success" disabled>Copiar al Portapapeles</button>
             </div>
         </main>
