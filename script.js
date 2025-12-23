@@ -37,12 +37,13 @@ function cleanFormatting() {
     let cleanedHTML = tempDiv.innerHTML;
     
     // Decode common HTML entities to their corresponding characters
+    // Note: &amp; must be replaced last to avoid double-decoding
     cleanedHTML = cleanedHTML.replace(/&nbsp;/g, ' ');
-    cleanedHTML = cleanedHTML.replace(/&amp;/g, '&');
     cleanedHTML = cleanedHTML.replace(/&lt;/g, '<');
     cleanedHTML = cleanedHTML.replace(/&gt;/g, '>');
     cleanedHTML = cleanedHTML.replace(/&quot;/g, '"');
     cleanedHTML = cleanedHTML.replace(/&#39;/g, "'");
+    cleanedHTML = cleanedHTML.replace(/&amp;/g, '&');
     
     // Set the output
     outputArea.innerHTML = cleanedHTML;
