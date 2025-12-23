@@ -193,17 +193,24 @@ function removeEmptyElements(parent) {
 function removeEmptyLinesBetweenParagraphs(parent) {
     // Find all <br> elements that appear between closing and opening <p> tags
     // This handles patterns like </p><br><p> or </p> <br> <p>
-    const allNodes = Array.from(parent.querySelectorAll('*'));
+    const allBrNodes = Array.from(parent.querySelectorAll('br'));
     
-    allNodes.forEach(node => {
-        if (node.tagName === 'BR') {
-            const prev = node.previousElementSibling;
-            const next = node.nextElementSibling;
-            
-            // Remove <br> if it's between two paragraphs
-            if (prev && next && prev.tagName === 'P' && next.tagName === 'P') {
-                node.remove();
-            }
+    allBrNodes.forEach(node => {
+        // Find previous and next element siblings, skipping text nodes
+        let prev = node.previousSibling;
+        while (prev && prev.nodeType === Node.TEXT_NODE && prev.textContent.trim() === '') {
+            prev = prev.previousSibling;
+        }
+        
+        let next = node.nextSibling;
+        while (next && next.nodeType === Node.TEXT_NODE && next.textContent.trim() === '') {
+            next = next.nextSibling;
+        }
+        
+        // Remove <br> if it's between two paragraphs
+        if (prev && next && prev.nodeType === Node.ELEMENT_NODE && next.nodeType === Node.ELEMENT_NODE &&
+            prev.tagName === 'P' && next.tagName === 'P') {
+            node.remove();
         }
     });
     
