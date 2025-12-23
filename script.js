@@ -152,8 +152,8 @@ function processElement(parent) {
                 return;
             }
             
-            // Keep only essential tags: p, br, strong, em, u, a, ul, ol, li
-            const allowedTags = ['P', 'BR', 'STRONG', 'EM', 'U', 'A', 'UL', 'OL', 'LI', 'DIV'];
+            // Keep only essential tags: p, br, strong, em, u, a, ul, ol, li, h1-h6
+            const allowedTags = ['P', 'BR', 'STRONG', 'EM', 'U', 'A', 'UL', 'OL', 'LI', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
             
             if (!allowedTags.includes(element.tagName)) {
                 // For other tags, unwrap them but keep content
