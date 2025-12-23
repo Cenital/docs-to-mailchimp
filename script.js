@@ -10,7 +10,7 @@ function cleanFormatting() {
     // Get the HTML content from the input area
     const inputHTML = inputArea.innerHTML;
     
-    if (!inputHTML.trim() || inputHTML.trim() === '') {
+    if (!inputHTML.trim()) {
         alert('Please paste some content first!');
         return;
     }
@@ -59,10 +59,9 @@ function processElement(parent) {
             
             // Check for inline styles BEFORE removing them
             const computedStyle = window.getComputedStyle(element);
-            const isBold = element.style.fontWeight === '700' || 
-                          element.style.fontWeight === 'bold' || 
-                          computedStyle.fontWeight === '700' ||
-                          computedStyle.fontWeight === 'bold';
+            const fontWeight = element.style.fontWeight || computedStyle.fontWeight;
+            const isBold = fontWeight === 'bold' || 
+                          parseInt(fontWeight) >= 600;
             const isItalic = element.style.fontStyle === 'italic' || 
                            computedStyle.fontStyle === 'italic';
             const isUnderline = element.style.textDecoration?.includes('underline') ||
@@ -224,6 +223,8 @@ function fallbackCopy() {
     selection.addRange(range);
     
     try {
+        // Using deprecated execCommand as a fallback for older browsers
+        // that don't support the Clipboard API
         document.execCommand('copy');
         showFeedback('Copied to clipboard!');
     } catch (err) {
