@@ -4,6 +4,7 @@ const outputArea = document.getElementById('output');
 const cleanButton = document.getElementById('cleanButton');
 const copyButton = document.getElementById('copyButton');
 const clearButton = document.getElementById('clearButton');
+const removeEmptyLinesCheckbox = document.getElementById('removeEmptyLines');
 
 // Clean formatting function
 function cleanFormatting() {
@@ -11,7 +12,7 @@ function cleanFormatting() {
     const inputHTML = inputArea.innerHTML;
     
     if (!inputHTML.trim()) {
-        alert('Please paste some content first!');
+        alert('¡Por favor pegá contenido primero!');
         return;
     }
     
@@ -21,6 +22,11 @@ function cleanFormatting() {
     
     // Remove specific Google Docs artifacts and unwanted styling
     cleanGoogleDocsFormatting(tempDiv);
+    
+    // Remove empty lines between paragraphs if checkbox is checked
+    if (removeEmptyLinesCheckbox.checked) {
+        removeEmptyLinesBetweenParagraphs(tempDiv);
+    }
     
     // Get the cleaned HTML
     const cleanedHTML = tempDiv.innerHTML;
@@ -184,6 +190,40 @@ function removeEmptyElements(parent) {
     });
 }
 
+function removeEmptyLinesBetweenParagraphs(parent) {
+    // Find all <br> elements that appear between closing and opening <p> tags
+    // This handles patterns like </p><br><p> or </p> <br> <p>
+    const allNodes = Array.from(parent.querySelectorAll('*'));
+    
+    allNodes.forEach(node => {
+        if (node.tagName === 'BR') {
+            const prev = node.previousElementSibling;
+            const next = node.nextElementSibling;
+            
+            // Remove <br> if it's between two paragraphs
+            if (prev && next && prev.tagName === 'P' && next.tagName === 'P') {
+                node.remove();
+            }
+        }
+    });
+    
+    // Also handle <br> inside paragraphs that are alone
+    const paragraphs = parent.querySelectorAll('p');
+    paragraphs.forEach(p => {
+        // If paragraph only contains a <br> and whitespace, remove the <br>
+        const children = Array.from(p.childNodes);
+        const hasOnlyBr = children.every(child => {
+            if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'BR') return true;
+            if (child.nodeType === Node.TEXT_NODE && child.textContent.trim() === '') return true;
+            return false;
+        });
+        
+        if (hasOnlyBr && children.some(child => child.tagName === 'BR')) {
+            p.querySelectorAll('br').forEach(br => br.remove());
+        }
+    });
+}
+
 // Copy to clipboard function
 async function copyToClipboard() {
     try {
@@ -202,11 +242,11 @@ async function copyToClipboard() {
                     'text/plain': new Blob([plainText], { type: 'text/plain' })
                 })
             ]);
-            showFeedback('Copied to clipboard!');
+            showFeedback('¡Copiado al portapapeles!');
         } catch (err) {
             // Fallback to plain text if HTML copy fails
             await navigator.clipboard.writeText(plainText);
-            showFeedback('Copied as plain text!');
+            showFeedback('¡Copiado como texto plano!');
         }
     } catch (err) {
         console.error('Failed to copy:', err);
@@ -226,9 +266,9 @@ function fallbackCopy() {
         // Using deprecated execCommand as a fallback for older browsers
         // that don't support the Clipboard API
         document.execCommand('copy');
-        showFeedback('Copied to clipboard!');
+        showFeedback('¡Copiado al portapapeles!');
     } catch (err) {
-        alert('Failed to copy. Please select and copy manually.');
+        alert('Error al copiar. Por favor seleccioná y copiá manualmente.');
     }
     
     selection.removeAllRanges();
@@ -237,7 +277,7 @@ function fallbackCopy() {
 function showFeedback(message) {
     const originalText = copyButton.textContent;
     copyButton.textContent = message;
-    copyButton.style.background = '#059669';
+    copyButton.style.background = '#F95755';
     
     setTimeout(() => {
         copyButton.textContent = originalText;
