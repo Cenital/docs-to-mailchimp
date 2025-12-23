@@ -57,6 +57,17 @@ function processElement(parent) {
         if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node;
             
+            // Check for inline styles BEFORE removing them
+            const computedStyle = window.getComputedStyle(element);
+            const isBold = element.style.fontWeight === '700' || 
+                          element.style.fontWeight === 'bold' || 
+                          computedStyle.fontWeight === '700' ||
+                          computedStyle.fontWeight === 'bold';
+            const isItalic = element.style.fontStyle === 'italic' || 
+                           computedStyle.fontStyle === 'italic';
+            const isUnderline = element.style.textDecoration?.includes('underline') ||
+                              computedStyle.textDecoration?.includes('underline');
+            
             // Remove all inline styles
             element.removeAttribute('style');
             
@@ -65,15 +76,39 @@ function processElement(parent) {
             element.removeAttribute('class');
             element.removeAttribute('dir');
             
-            // Handle spans - unwrap unless they contain formatting
+            // Handle spans - convert to semantic tags if they have formatting
             if (element.tagName === 'SPAN') {
-                const hasFormatting = element.querySelector('b, strong, i, em, u, a');
-                const isFormatted = element.style.fontWeight === 'bold' || 
-                                  element.style.fontStyle === 'italic' ||
-                                  element.style.textDecoration === 'underline';
+                const hasFormattingChildren = element.querySelector('b, strong, i, em, u, a');
                 
-                if (!hasFormatting && !isFormatted) {
-                    // Unwrap the span
+                if (isBold && !hasFormattingChildren) {
+                    // Convert to strong
+                    const strong = document.createElement('strong');
+                    while (element.firstChild) {
+                        strong.appendChild(element.firstChild);
+                    }
+                    element.parentNode.replaceChild(strong, element);
+                    processElement(strong);
+                    return;
+                } else if (isItalic && !hasFormattingChildren) {
+                    // Convert to em
+                    const em = document.createElement('em');
+                    while (element.firstChild) {
+                        em.appendChild(element.firstChild);
+                    }
+                    element.parentNode.replaceChild(em, element);
+                    processElement(em);
+                    return;
+                } else if (isUnderline && !hasFormattingChildren) {
+                    // Convert to u
+                    const u = document.createElement('u');
+                    while (element.firstChild) {
+                        u.appendChild(element.firstChild);
+                    }
+                    element.parentNode.replaceChild(u, element);
+                    processElement(u);
+                    return;
+                } else if (!hasFormattingChildren && !isBold && !isItalic && !isUnderline) {
+                    // Unwrap the span if it has no formatting
                     while (element.firstChild) {
                         element.parentNode.insertBefore(element.firstChild, element);
                     }
