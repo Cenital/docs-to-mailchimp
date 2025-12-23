@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Docs to Mailchimp Formatter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Google Docs to Mailchimp Formatter</h1>
+            <p class="subtitle">Clean formatting issues when pasting from Google Docs to Mailchimp</p>
+        </header>
+
+        <main>
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Paste from Google Docs</h2>
+                    <p class="hint">Copy content from Google Docs and paste it below</p>
+                </div>
+                <div class="input-container" contenteditable="true" id="input" placeholder="Paste your Google Docs content here..."></div>
+            </div>
+
+            <div class="button-container">
+                <button id="cleanButton" class="btn btn-primary">Clean Formatting →</button>
+                <button id="clearButton" class="btn btn-secondary">Clear All</button>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Cleaned Result</h2>
+                    <p class="hint">Ready to paste into Mailchimp</p>
+                </div>
+                <div class="output-container" contenteditable="false" id="output"></div>
+                <button id="copyButton" class="btn btn-success" disabled>Copy to Clipboard</button>
+            </div>
+        </main>
+
+        <footer>
+            <p>This tool removes rogue formatting from Google Docs while preserving intended bold, italic, lists, and links.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
