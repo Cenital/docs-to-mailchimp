@@ -56,18 +56,28 @@ function cleanFormatting() {
 }
 
 function cleanGoogleDocsFormatting(element) {
-    // Remove Google Docs specific elements and IDs
+    // Remove Google Docs specific IDs and classes, but preserve block elements
+    const blockElements = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'BLOCKQUOTE'];
     const elementsToRemove = element.querySelectorAll('[id^="docs-"], .c, .lst-');
     elementsToRemove.forEach(el => {
-        // Move children out before removing the element
-        while (el.firstChild) {
-            el.parentNode.insertBefore(el.firstChild, el);
+        if (blockElements.includes(el.tagName)) {
+            // For block elements, just remove the attributes, don't remove the element itself
+            el.removeAttribute('id');
+            el.removeAttribute('class');
+        } else {
+            // For other elements, move children out and remove the element
+            while (el.firstChild) {
+                el.parentNode.insertBefore(el.firstChild, el);
+            }
+            el.remove();
         }
-        el.remove();
     });
     
     // Process all elements recursively
     processElement(element);
+    
+    // Wrap orphaned inline content in paragraph tags
+    wrapOrphanedInlineContent(element);
     
     // Remove empty elements
     removeEmptyElements(element);
@@ -189,6 +199,70 @@ function processElement(parent) {
             processElement(element);
         }
     });
+}
+
+function wrapOrphanedInlineContent(parent) {
+    // Block-level elements that should not be wrapped
+    const blockElements = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'BLOCKQUOTE'];
+    // Block elements that can contain other block elements (should be recursively processed)
+    const containerBlocks = ['DIV', 'UL', 'OL', 'LI', 'BLOCKQUOTE'];
+    // Inline elements that should be wrapped
+    const inlineElements = ['STRONG', 'EM', 'U', 'A', 'SPAN'];
+    
+    const children = Array.from(parent.childNodes);
+    let inlineGroup = [];
+    
+    const wrapGroup = () => {
+        if (inlineGroup.length > 0) {
+            // Check if any node in the group has meaningful content
+            const hasContent = inlineGroup.some(node => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    return node.textContent.trim().length > 0;
+                }
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    return node.textContent.trim().length > 0 || node.tagName === 'BR';
+                }
+                return false;
+            });
+            
+            if (hasContent) {
+                const p = document.createElement('p');
+                const firstNode = inlineGroup[0];
+                parent.insertBefore(p, firstNode);
+                
+                inlineGroup.forEach(node => {
+                    p.appendChild(node);
+                });
+            }
+            
+            inlineGroup = [];
+        }
+    };
+    
+    children.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            if (blockElements.includes(node.tagName)) {
+                // Wrap any accumulated inline content
+                wrapGroup();
+                // Only recursively process container blocks that can have block children
+                if (containerBlocks.includes(node.tagName)) {
+                    wrapOrphanedInlineContent(node);
+                }
+            } else if (inlineElements.includes(node.tagName) || node.tagName === 'BR') {
+                // Accumulate inline elements
+                inlineGroup.push(node);
+            } else {
+                // For other elements, wrap accumulated content first
+                wrapGroup();
+            }
+        } else if (node.nodeType === Node.TEXT_NODE) {
+            // Accumulate text nodes
+            inlineGroup.push(node);
+        }
+    });
+    
+    // Wrap any remaining inline content
+    wrapGroup();
 }
 
 function removeEmptyElements(parent) {
