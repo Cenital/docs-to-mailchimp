@@ -11,6 +11,13 @@ const outputHtmlView = document.getElementById('outputHtmlView');
 const inputTabs = document.getElementById('inputTabs');
 const outputTabs = document.getElementById('outputTabs');
 
+// Constants for HTML element classification
+const BLOCK_ELEMENTS = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'BLOCKQUOTE'];
+const INLINE_ELEMENTS = ['STRONG', 'EM', 'U', 'A', 'SPAN'];
+// Container blocks that can have block-level children and should be recursively processed
+// LI is excluded to prevent unwanted paragraph wrapping of list item content
+const CONTAINER_BLOCKS = ['DIV', 'UL', 'OL', 'BLOCKQUOTE'];
+
 // Clean formatting function
 function cleanFormatting() {
     // Get the HTML content from the input area
@@ -57,10 +64,9 @@ function cleanFormatting() {
 
 function cleanGoogleDocsFormatting(element) {
     // Remove Google Docs specific IDs and classes, but preserve block elements
-    const blockElements = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'BLOCKQUOTE'];
     const elementsToRemove = element.querySelectorAll('[id^="docs-"], .c, .lst-');
     elementsToRemove.forEach(el => {
-        if (blockElements.includes(el.tagName)) {
+        if (BLOCK_ELEMENTS.includes(el.tagName)) {
             // For block elements, just remove the attributes, don't remove the element itself
             el.removeAttribute('id');
             el.removeAttribute('class');
@@ -202,14 +208,6 @@ function processElement(parent) {
 }
 
 function wrapOrphanedInlineContent(parent) {
-    // Block-level elements that should not be wrapped
-    const blockElements = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'BLOCKQUOTE'];
-    // Block elements that can contain other block elements (should be recursively processed)
-    // Note: LI is excluded because it typically contains inline content, not block elements
-    const containerBlocks = ['DIV', 'UL', 'OL', 'BLOCKQUOTE'];
-    // Inline elements that should be wrapped
-    const inlineElements = ['STRONG', 'EM', 'U', 'A', 'SPAN'];
-    
     const children = Array.from(parent.childNodes);
     let inlineGroup = [];
     
@@ -242,14 +240,14 @@ function wrapOrphanedInlineContent(parent) {
     
     children.forEach(node => {
         if (node.nodeType === Node.ELEMENT_NODE) {
-            if (blockElements.includes(node.tagName)) {
+            if (BLOCK_ELEMENTS.includes(node.tagName)) {
                 // Wrap any accumulated inline content
                 wrapGroup();
                 // Only recursively process container blocks that can have block children
-                if (containerBlocks.includes(node.tagName)) {
+                if (CONTAINER_BLOCKS.includes(node.tagName)) {
                     wrapOrphanedInlineContent(node);
                 }
-            } else if (inlineElements.includes(node.tagName) || node.tagName === 'BR') {
+            } else if (INLINE_ELEMENTS.includes(node.tagName) || node.tagName === 'BR') {
                 // Accumulate inline elements
                 inlineGroup.push(node);
             } else {
