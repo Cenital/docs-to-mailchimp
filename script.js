@@ -205,7 +205,8 @@ function wrapOrphanedInlineContent(parent) {
     // Block-level elements that should not be wrapped
     const blockElements = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'BLOCKQUOTE'];
     // Block elements that can contain other block elements (should be recursively processed)
-    const containerBlocks = ['DIV', 'UL', 'OL', 'LI', 'BLOCKQUOTE'];
+    // Note: LI is excluded because it typically contains inline content, not block elements
+    const containerBlocks = ['DIV', 'UL', 'OL', 'BLOCKQUOTE'];
     // Inline elements that should be wrapped
     const inlineElements = ['STRONG', 'EM', 'U', 'A', 'SPAN'];
     
