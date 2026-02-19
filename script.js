@@ -113,6 +113,8 @@ function processElement(parent) {
             element.removeAttribute('id');
             element.removeAttribute('class');
             element.removeAttribute('dir');
+            element.removeAttribute('aria-level');
+            element.removeAttribute('role');
             
             // Handle spans - convert to semantic tags if they have formatting
             if (element.tagName === 'SPAN') {
@@ -203,6 +205,18 @@ function processElement(parent) {
             
             // Recursively process children
             processElement(element);
+            
+            // For LI elements, unwrap direct P children after processing
+            if (element.tagName === 'LI') {
+                Array.from(element.childNodes).forEach(child => {
+                    if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'P') {
+                        while (child.firstChild) {
+                            element.insertBefore(child.firstChild, child);
+                        }
+                        child.remove();
+                    }
+                });
+            }
         }
     });
 }
